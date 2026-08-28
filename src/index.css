@@ -1,0 +1,129 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    font-family: 'Alexandria', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: #080306;
+    color: #fff0f3;
+  }
+  
+  .font-amiri {
+    font-family: 'Amiri', serif;
+  }
+  
+  .font-reem {
+    font-family: 'Reem Kufi', sans-serif;
+  }
+  
+  .font-scheherazade {
+    font-family: 'Scheherazade New', serif;
+  }
+}
+
+@keyframes fallHeart {
+  0% {
+    transform: translateY(-10vh) translateX(0) rotate(0deg) scale(0.8);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.85;
+  }
+  90% {
+    opacity: 0.85;
+  }
+  100% {
+    transform: translateY(105vh) translateX(40px) rotate(360deg) scale(1.1);
+    opacity: 0;
+  }
+}
+
+@keyframes floatHeart {
+  0%, 100% {
+    transform: translateY(0px) scale(1) rotate(0deg);
+    opacity: 0.6;
+  }
+  50% {
+    transform: translateY(-14px) scale(1.12) rotate(8deg);
+    opacity: 0.95;
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(244, 63, 94, 0.4), 0 0 30px rgba(236, 72, 153, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(244, 63, 94, 0.7), 0 0 50px rgba(236, 72, 153, 0.4);
+  }
+}
+
+@keyframes slowSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-slow-spin {
+  animation: slowSpin 12s linear infinite;
+}
+
+.animate-float-heart {
+  animation: floatHeart 4s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 2.5s ease-in-out infinite;
+}
+
+/* Romantic Text Gradients */
+.love-gradient-text {
+  background: linear-gradient(135deg, #ff758c 0%, #ff4b6e 50%, #f43f5e 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.pink-gold-gradient-text {
+  background: linear-gradient(135deg, #ffe4e6 0%, #ff758c 40%, #e11d48 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Romantic Velvet Black Cards with Pink/Red Neon Borders */
+.love-card {
+  background: linear-gradient(180deg, rgba(28, 10, 18, 0.85) 0%, rgba(14, 5, 10, 0.95) 100%);
+  border: 1px solid rgba(244, 63, 94, 0.35);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 12px 35px -5px rgba(0, 0, 0, 0.8), 0 0 20px rgba(244, 63, 94, 0.15);
+}
+
+.love-card-inner {
+  background: rgba(20, 7, 13, 0.75);
+  border: 1px solid rgba(244, 63, 94, 0.2);
+}
+
+.love-button {
+  background: linear-gradient(135deg, #ff4b6e 0%, #e11d48 50%, #be123c 100%);
+  box-shadow: 0 4px 20px rgba(225, 29, 72, 0.4);
+}
+
+.love-button:hover {
+  background: linear-gradient(135deg, #ff6b8b 0%, #f43f5e 50%, #e11d48 100%);
+  box-shadow: 0 6px 25px rgba(244, 63, 94, 0.6);
+}
+
+/* Custom romantic scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+}
+::-webkit-scrollbar-track {
+  background: #080306;
+}
+::-webkit-scrollbar-thumb {
+  background: #e11d48;
+  border-radius: 4px;
+}
+
+

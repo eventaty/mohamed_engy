@@ -1,0 +1,14 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /blessings/{blessingId} {
+      allow read: if true;
+      allow create: if request.resource.data.name is string 
+                    && request.resource.data.message is string
+                    && request.resource.data.name.size() > 0 
+                    && request.resource.data.message.size() > 0;
+      allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes', 'likedBy']);
+      allow delete: if false;
+    }
+  }
+}

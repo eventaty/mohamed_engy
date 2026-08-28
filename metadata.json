@@ -1,0 +1,7 @@
+{
+  "name": "دعوة عقد قران محمد وإنجي",
+  "description": "دعوة إلكترونية فاخرة لعقد قران وكتب كتاب محمد وإنجي بمسجد عثمان معن مع سجل التهاني والمباركات والموقع والموسيقى",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
