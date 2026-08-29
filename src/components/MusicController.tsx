@@ -2,156 +2,97 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Music2, Disc, Heart } from 'lucide-react';
 
-declare global {
-  interface Window {
-    onYouTubeIframeAPIReady?: () => void;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    YT: any;
-  }
-}
-
 export const MusicController: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [showInteractionPrompt, setShowInteractionPrompt] = useState(false);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const playerRef = useRef<any>(null);
-  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const videoId = 'mHpTdsBbYRM';
-  const startTime = 140.5; // 2 minutes and 20.5 seconds (in between 2:20 and 2:21)
+  // Start time in seconds (e.g. 72s for the iconic chorus 'بارك الله لكما' or 0 for the beginning)
+  const startTime = 72;
+
+  // Local audio path in public folder (e.g. ./song.mp3)
+  const audioSrc = './song.mp3';
 
   const playMusic = () => {
-    if (playerRef.current && typeof playerRef.current.playVideo === 'function') {
+    if (audioRef.current) {
       try {
-        if (typeof playerRef.current.getCurrentTime === 'function' && playerRef.current.getCurrentTime() < startTime) {
-          playerRef.current.seekTo(startTime, true);
+        if (audioRef.current.currentTime < startTime || audioRef.current.currentTime === 0) {
+          audioRef.current.currentTime = startTime;
         }
-        playerRef.current.playVideo();
-        setIsPlaying(true);
-        setShowInteractionPrompt(false);
+        const playPromise = audioRef.current.play();
+        if (playPromise !== undefined) {
+          playPromise
+            .then(() => {
+              setIsPlaying(true);
+              setShowInteractionPrompt(false);
+            })
+            .catch((err) => {
+              console.log('Audio autoplay prevented or file loading:', err);
+              setShowInteractionPrompt(true);
+            });
+        }
       } catch (err) {
-        console.log('Play error:', err);
+        console.log('Direct audio play error:', err);
       }
-    } else if (iframeRef.current && iframeRef.current.contentWindow) {
-      iframeRef.current.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
-      setIsPlaying(true);
-      setShowInteractionPrompt(false);
     }
   };
 
-  // Initialize YouTube Player
   useEffect(() => {
-    // Listen for custom trigger to play from envelope
+    // Setup Audio
+    const audio = new Audio(audioSrc);
+    audio.preload = 'auto';
+    audio.loop = true;
+    audioRef.current = audio;
+
+    const handleLoadedMetadata = () => {
+      if (audio.duration && startTime < audio.duration) {
+        audio.currentTime = startTime;
+      }
+    };
+
+    audio.addEventListener('loadedmetadata', handleLoadedMetadata);
+
     const handleStartAudioEvent = () => {
       playMusic();
     };
 
     window.addEventListener('start-invitation-music', handleStartAudioEvent);
 
-    // Inject YouTube API if needed
-    if (!window.YT) {
-      const tag = document.createElement('script');
-      tag.src = 'https://www.youtube.com/iframe_api';
-      const firstScriptTag = document.getElementsByTagName('script')[0];
-      firstScriptTag?.parentNode?.insertBefore(tag, firstScriptTag);
-    }
-
-    const initPlayer = () => {
-      if (window.YT && window.YT.Player) {
-        try {
-          playerRef.current = new window.YT.Player('yt-wedding-audio', {
-            events: {
-              onReady: (event: any) => {
-                try {
-                  event.target.seekTo(startTime, true);
-                  // If envelope was already opened, play
-                  const isOpened = window.sessionStorage.getItem('invitation_opened') === 'true';
-                  if (isOpened) {
-                    event.target.playVideo();
-                    setIsPlaying(true);
-                  }
-                } catch {
-                  // Browser policy
-                }
-              },
-              onStateChange: (event: any) => {
-                if (event.data === 1) {
-                  setIsPlaying(true);
-                  setShowInteractionPrompt(false);
-                } else if (event.data === 2 || event.data === 0) {
-                  setIsPlaying(false);
-                }
-              },
-            },
-          });
-        } catch (e) {
-          console.warn('YT Player init notice:', e);
-        }
-      }
-    };
-
-    if (window.YT && window.YT.Player) {
-      initPlayer();
-    } else {
-      window.onYouTubeIframeAPIReady = initPlayer;
-    }
-
     return () => {
       window.removeEventListener('start-invitation-music', handleStartAudioEvent);
+      audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      audio.pause();
     };
-  }, [videoId, startTime]);
+  }, [audioSrc, startTime]);
 
   const togglePlay = () => {
     setShowInteractionPrompt(false);
-    if (playerRef.current && typeof playerRef.current.playVideo === 'function') {
-      if (isPlaying) {
-        playerRef.current.pauseVideo();
-        setIsPlaying(false);
-      } else {
-        playerRef.current.playVideo();
-        setIsPlaying(true);
-      }
-    } else if (iframeRef.current && iframeRef.current.contentWindow) {
-      if (isPlaying) {
-        iframeRef.current.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
-        setIsPlaying(false);
-      } else {
-        iframeRef.current.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
-        setIsPlaying(true);
-      }
+    if (!audioRef.current) return;
+
+    if (isPlaying) {
+      audioRef.current.pause();
+      setIsPlaying(false);
     } else {
-      window.open(`https://www.youtube.com/watch?v=${videoId}`, '_blank');
+      if (audioRef.current.currentTime === 0 || audioRef.current.currentTime < startTime) {
+        audioRef.current.currentTime = startTime;
+      }
+      audioRef.current.play()
+        .then(() => setIsPlaying(true))
+        .catch((e) => console.log('Playback error:', e));
     }
   };
 
   const toggleMute = () => {
-    if (playerRef.current && typeof playerRef.current.mute === 'function') {
-      if (isMuted) {
-        playerRef.current.unMute();
-        setIsMuted(false);
-      } else {
-        playerRef.current.mute();
-        setIsMuted(true);
-      }
+    if (audioRef.current) {
+      const newMuted = !isMuted;
+      audioRef.current.muted = newMuted;
+      setIsMuted(newMuted);
     }
   };
 
   return (
     <>
-      {/* Embedded YouTube Player with sound and loop */}
-      <div className="fixed -top-[500px] -left-[500px] w-10 h-10 overflow-hidden pointer-events-none opacity-0 z-[-1]">
-        <iframe
-          id="yt-wedding-audio"
-          ref={iframeRef}
-          width="200"
-          height="200"
-          src={`https://www.youtube.com/embed/${videoId}?enablejsapi=1&autoplay=1&start=${startTime}&loop=1&playlist=${videoId}&playsinline=1&controls=0&modestbranding=1`}
-          title="أغنية كتب الكتاب"
-          allow="autoplay; encrypted-media"
-        />
-      </div>
-
       {/* Floating Music Control Widget (Compact & Elegant) */}
       <div className="fixed top-3 left-3 z-50 flex flex-col items-start gap-1.5">
         <motion.div
