@@ -13,7 +13,7 @@ declare global {
 export const MusicController: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
-  const [showInteractionPrompt, setShowInteractionPrompt] = useState(true);
+  const [showInteractionPrompt, setShowInteractionPrompt] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const playerRef = useRef<any>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -21,8 +21,34 @@ export const MusicController: React.FC = () => {
   const videoId = 'mHpTdsBbYRM';
   const startTime = 140.5; // 2 minutes and 20.5 seconds (in between 2:20 and 2:21)
 
+  const playMusic = () => {
+    if (playerRef.current && typeof playerRef.current.playVideo === 'function') {
+      try {
+        if (typeof playerRef.current.getCurrentTime === 'function' && playerRef.current.getCurrentTime() < startTime) {
+          playerRef.current.seekTo(startTime, true);
+        }
+        playerRef.current.playVideo();
+        setIsPlaying(true);
+        setShowInteractionPrompt(false);
+      } catch (err) {
+        console.log('Play error:', err);
+      }
+    } else if (iframeRef.current && iframeRef.current.contentWindow) {
+      iframeRef.current.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
+      setIsPlaying(true);
+      setShowInteractionPrompt(false);
+    }
+  };
+
   // Initialize YouTube Player
   useEffect(() => {
+    // Listen for custom trigger to play from envelope
+    const handleStartAudioEvent = () => {
+      playMusic();
+    };
+
+    window.addEventListener('start-invitation-music', handleStartAudioEvent);
+
     // Inject YouTube API if needed
     if (!window.YT) {
       const tag = document.createElement('script');
@@ -39,14 +65,17 @@ export const MusicController: React.FC = () => {
               onReady: (event: any) => {
                 try {
                   event.target.seekTo(startTime, true);
-                  event.target.playVideo();
-                  setIsPlaying(true);
+                  // If envelope was already opened, play
+                  const isOpened = window.sessionStorage.getItem('invitation_opened') === 'true';
+                  if (isOpened) {
+                    event.target.playVideo();
+                    setIsPlaying(true);
+                  }
                 } catch {
-                  // Browser policy may require interaction
+                  // Browser policy
                 }
               },
               onStateChange: (event: any) => {
-                // 1 = Playing, 2 = Paused, 0 = Ended
                 if (event.data === 1) {
                   setIsPlaying(true);
                   setShowInteractionPrompt(false);
@@ -68,35 +97,8 @@ export const MusicController: React.FC = () => {
       window.onYouTubeIframeAPIReady = initPlayer;
     }
 
-    // Global listener on any first interaction (touch/click/scroll) to guarantee autoplay
-    const handleFirstGesture = () => {
-      if (playerRef.current && typeof playerRef.current.playVideo === 'function') {
-        try {
-          if (typeof playerRef.current.getCurrentTime === 'function' && playerRef.current.getCurrentTime() < startTime) {
-            playerRef.current.seekTo(startTime, true);
-          }
-          playerRef.current.playVideo();
-          setIsPlaying(true);
-          setShowInteractionPrompt(false);
-        } catch (err) {
-          console.log('Play attempt on interaction:', err);
-        }
-      } else if (iframeRef.current && iframeRef.current.contentWindow) {
-        // Fallback postMessage to start iframe video
-        iframeRef.current.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
-        setIsPlaying(true);
-        setShowInteractionPrompt(false);
-      }
-    };
-
-    window.addEventListener('click', handleFirstGesture, { once: true });
-    window.addEventListener('touchstart', handleFirstGesture, { once: true });
-    window.addEventListener('scroll', handleFirstGesture, { once: true });
-
     return () => {
-      window.removeEventListener('click', handleFirstGesture);
-      window.removeEventListener('touchstart', handleFirstGesture);
-      window.removeEventListener('scroll', handleFirstGesture);
+      window.removeEventListener('start-invitation-music', handleStartAudioEvent);
     };
   }, [videoId, startTime]);
 
