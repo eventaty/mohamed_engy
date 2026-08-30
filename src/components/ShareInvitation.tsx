@@ -6,7 +6,7 @@ export const ShareInvitation: React.FC = () => {
   const [copied, setCopied] = useState(false);
 
   const shareTitle = 'دعوة عقد قران محمد وإنجي';
-  const shareText = `يتشرف العروسان (محمد & إنجي) بدعوتكم لمشاركتهما فرحة عقد القران وكتب الكتاب بمسجد عثمان معن يوم الأحد. يمكنكم ترك تهنئتكم ومباركتكم عبر الرابط:`;
+  const shareText = `يتشرف العروسان (محمد & إنجي) بدعوتكم لمشاركتهما فرحة عقد القران وكتب الكتاب بمسجد عثمان معن يوم الأحد 6/9/2026 بعد صلاة العصر. يمكنكم ترك تهنئتكم ومباركتكم عبر الرابط:`;
   const shareUrl = window.location.href;
 
   const handleCopyLink = () => {

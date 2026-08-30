@@ -31,20 +31,9 @@ export const EventDetailsCard: React.FC = () => {
   const mapsUrl = 'https://maps.app.goo.gl/DaqKPLcg8VrtDTBo9';
   const venueName = 'مسجد عثمان معن';
 
-  // Calculate next Sunday target date
+  // Target date: Sunday September 6, 2026 after Asr prayer (approx 4:00 PM)
   useEffect(() => {
-    const calculateTargetSunday = () => {
-      const now = new Date();
-      const currentDay = now.getDay(); // 0 is Sunday
-      const daysUntilSunday = currentDay === 0 ? 7 : (7 - currentDay);
-      
-      const target = new Date(now);
-      target.setDate(now.getDate() + daysUntilSunday);
-      target.setHours(18, 0, 0, 0); // 6:00 PM evening ceremony
-      return target;
-    };
-
-    const targetDate = calculateTargetSunday();
+    const targetDate = new Date(2026, 8, 6, 16, 0, 0); // Month is 0-indexed (8 = September)
 
     const updateCountdown = () => {
       const now = new Date().getTime();
@@ -75,10 +64,11 @@ export const EventDetailsCard: React.FC = () => {
 
   const handleAddToCalendar = () => {
     const title = encodeURIComponent('عقد قران وكتب كتاب محمد وإنجي');
-    const details = encodeURIComponent('نتشرف بحضوركم لمشاركتنا فرحة عقد القران بمسجد عثمان معن');
+    const details = encodeURIComponent('نتشرف بحضوركم لمشاركتنا فرحة عقد القران بمسجد عثمان معن يوم الأحد 6/9/2026 بعد صلاة العصر');
     const location = encodeURIComponent(`${venueName}, ${mapsUrl}`);
+    const dates = '20260906T133000Z/20260906T160000Z';
     
-    const googleCalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}&location=${location}`;
+    const googleCalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}&location=${location}&dates=${dates}`;
     window.open(googleCalUrl, '_blank', 'noopener,noreferrer');
   };
 
@@ -129,13 +119,13 @@ export const EventDetailsCard: React.FC = () => {
               <CalendarIcon className="w-5 h-5" />
             </div>
             <div>
-              <p className="text-[11px] text-[#fecdd3]/70 mb-0.5 whitespace-nowrap">الموعد واليوم</p>
+              <p className="text-[11px] text-[#fecdd3]/70 mb-0.5 whitespace-nowrap">الموعد والتاريخ</p>
               <h4 className="font-semibold text-sm sm:text-base text-[#fff0f3] whitespace-nowrap">
-                يوم الأحد المبارك
+                الأحد ٦ سبتمبر ٢٠٢٦ (6/9/2026)
               </h4>
-              <p className="text-xs text-[#ff758c] mt-0.5 flex items-center gap-1 whitespace-nowrap">
-                <Clock className="w-3 h-3" />
-                عقد القران ومراسم كتب الكتاب
+              <p className="text-xs text-[#ff758c] mt-0.5 flex items-center gap-1 whitespace-nowrap font-medium">
+                <Clock className="w-3.5 h-3.5 text-[#ff4b6e]" />
+                <span>بعد صلاة العصر مباشرة</span>
               </p>
             </div>
           </motion.div>
